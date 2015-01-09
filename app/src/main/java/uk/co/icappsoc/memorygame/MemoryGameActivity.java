@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.util.Random;
+
 
 public class MemoryGameActivity extends ActionBarActivity {
 
@@ -32,6 +34,8 @@ public class MemoryGameActivity extends ActionBarActivity {
         private static final int NONE = -1;
         private Handler handler = new Handler();
         private Button[] buttons = new Button[4];
+        private int[] images = new int[]{R.drawable.card_c3po, R.drawable.card_r2d2};
+        private int[] buttonToImageIndex = new int[4];
         private int buttonClicked;
 
         @Override
@@ -56,6 +60,21 @@ public class MemoryGameActivity extends ActionBarActivity {
                 });
             }
 
+            // Randomize button images
+            Random random = new Random();
+            int[] count = new int[images.length];
+            for(int i = 0; i < buttons.length; i++){
+                // Ensure max 2 of any given image are chosen
+                // Dirty solution, may not scale nicely depending on number of buttons / images
+                int candidateImageIndex = random.nextInt(images.length);
+                while(count[candidateImageIndex] >= 2){
+                    candidateImageIndex = random.nextInt(images.length);
+                }
+
+                count[candidateImageIndex]++;
+                buttonToImageIndex[i] = candidateImageIndex;
+            }
+
             resetButtons();
 
             return rootView;
@@ -66,7 +85,7 @@ public class MemoryGameActivity extends ActionBarActivity {
             if(BUSY == buttonClicked) return;
             if(NONE == buttonClicked){
                 // Set the image of the button to be a chosen picture
-                b.setBackgroundResource(R.drawable.card_c3po);
+                b.setBackgroundResource(images[buttonToImageIndex[index]]);
 
                 buttonClicked = index;
             } else {
@@ -76,7 +95,7 @@ public class MemoryGameActivity extends ActionBarActivity {
                 } else {
                     buttonClicked = BUSY;
 
-                    b.setBackgroundResource(R.drawable.card_c3po);
+                    b.setBackgroundResource(images[buttonToImageIndex[index]]);
 
                     // Call the hidePictures method after a delay
                     handler.postDelayed(new Runnable() {

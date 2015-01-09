@@ -4,10 +4,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
 public class MemoryGameActivity extends ActionBarActivity {
@@ -23,33 +22,12 @@ public class MemoryGameActivity extends ActionBarActivity {
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_memory_game, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
+
+        private Button[] buttons = new Button[4];
 
         public PlaceholderFragment() {
         }
@@ -58,7 +36,31 @@ public class MemoryGameActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_memory_game, container, false);
+
+            // Get a reference to each button, store in our buttons array
+            buttons[0] = (Button) rootView.findViewById(R.id.button);
+            buttons[1] = (Button) rootView.findViewById(R.id.button2);
+            buttons[2] = (Button) rootView.findViewById(R.id.button3);
+            buttons[3] = (Button) rootView.findViewById(R.id.button4);
+
+            // Each button behaves the same; on click, call showPicture with a reference to the clicked button
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showPicture((Button) v);
+                }
+            };
+
+            for(Button b : buttons){
+                b.setOnClickListener(onClickListener);
+            }
+
             return rootView;
+        }
+
+        private void showPicture(Button b){
+            // Set the image of the button to be a chosen picture
+            b.setBackgroundResource(R.drawable.card_c3po);
         }
     }
 }

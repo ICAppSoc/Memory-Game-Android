@@ -28,8 +28,11 @@ public class MemoryGameActivity extends ActionBarActivity {
      */
     public static class PlaceholderFragment extends Fragment {
 
+        private static final int BUSY = -2;
+        private static final int NONE = -1;
         private Handler handler = new Handler();
         private Button[] buttons = new Button[4];
+        private int buttonClicked;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,38 +46,56 @@ public class MemoryGameActivity extends ActionBarActivity {
             buttons[3] = (Button) rootView.findViewById(R.id.button4);
 
             // Each button behaves the same; on click, call showPicture with a reference to the clicked button
-            View.OnClickListener onClickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showPicture((Button) v);
-                }
-            };
-
-            for(Button b : buttons){
-                b.setOnClickListener(onClickListener);
+            for(int i = 0; i < buttons.length; i++){
+                final int index = i;
+                buttons[i].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onButtonClicked(index, buttons[index]);
+                    }
+                });
             }
+
+            resetButtons();
 
             return rootView;
         }
 
-        private void showPicture(Button b){
-            // Set the image of the button to be a chosen picture
-            b.setBackgroundResource(R.drawable.card_c3po);
+        private void onButtonClicked(int index, Button b){
 
-            // Call the hidePictures method after a delay
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    hidePictures();
+            if(BUSY == buttonClicked) return;
+            if(NONE == buttonClicked){
+                // Set the image of the button to be a chosen picture
+                b.setBackgroundResource(R.drawable.card_c3po);
+
+                buttonClicked = index;
+            } else {
+                // another button was previously clicked!
+                if(buttonClicked == index){
+                    return;
+                } else {
+                    buttonClicked = BUSY;
+
+                    b.setBackgroundResource(R.drawable.card_c3po);
+
+                    // Call the hidePictures method after a delay
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetButtons();
+                        }
+                    }, 700);
                 }
-            }, 4000); // Run after 4000ms, or 4s
+            }
         }
 
-        private void hidePictures(){
+        private void resetButtons(){
             // Reset the image of each button to the default back
             for(Button b : buttons){
                 b.setBackgroundResource(R.drawable.card_back);
             }
+
+            buttonClicked = NONE;
         }
     }
 }

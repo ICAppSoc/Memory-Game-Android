@@ -1,6 +1,7 @@
 package uk.co.icappsoc.memorygame;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -27,10 +28,8 @@ public class MemoryGameActivity extends ActionBarActivity {
      */
     public static class PlaceholderFragment extends Fragment {
 
+        private Handler handler = new Handler();
         private Button[] buttons = new Button[4];
-
-        public PlaceholderFragment() {
-        }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -61,6 +60,21 @@ public class MemoryGameActivity extends ActionBarActivity {
         private void showPicture(Button b){
             // Set the image of the button to be a chosen picture
             b.setBackgroundResource(R.drawable.card_c3po);
+
+            // Call the hidePictures method after a delay
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hidePictures();
+                }
+            }, 4000); // Run after 4000ms, or 4s
+        }
+
+        private void hidePictures(){
+            // Reset the image of each button to the default back
+            for(Button b : buttons){
+                b.setBackgroundResource(R.drawable.card_back);
+            }
         }
     }
 }

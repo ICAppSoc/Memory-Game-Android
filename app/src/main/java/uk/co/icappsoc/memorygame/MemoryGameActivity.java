@@ -34,6 +34,7 @@ public class MemoryGameActivity extends ActionBarActivity {
         private static final int NONE = -1;
         private Handler handler = new Handler();
         private Button[] buttons = new Button[4];
+        // Art by Michael B. Myers Jr. at http://drbl.in/bhbA
         private int[] images = new int[]{R.drawable.card_c3po, R.drawable.card_r2d2};
         private int[] buttonToImageIndex = new int[4];
         private int buttonClicked;

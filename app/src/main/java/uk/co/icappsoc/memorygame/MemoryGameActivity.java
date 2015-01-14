@@ -63,21 +63,6 @@ public class MemoryGameActivity extends ActionBarActivity {
                 });
             }
 
-            // Randomize button images
-            Random random = new Random();
-            int[] count = new int[images.length];
-            for(int i = 0; i < buttons.length; i++){
-                // Ensure max 2 of any given image are chosen
-                // Dirty solution, may not scale nicely depending on number of buttons / images
-                int candidateImageIndex = random.nextInt(images.length);
-                while(count[candidateImageIndex] >= 2){
-                    candidateImageIndex = random.nextInt(images.length);
-                }
-
-                count[candidateImageIndex]++;
-                buttonToImageIndex[i] = candidateImageIndex;
-            }
-
             busy = false;
             lastIndexClicked = NONE;
             resetButtons();
@@ -93,6 +78,25 @@ public class MemoryGameActivity extends ActionBarActivity {
 
             for(Button b : buttons){
                 b.setBackgroundResource(R.drawable.card_back);
+            }
+
+            randomizeButtonImages();
+        }
+
+        private void randomizeButtonImages(){
+            // Randomize button images
+            Random random = new Random();
+            int[] count = new int[images.length];
+            for(int i = 0; i < buttons.length; i++){
+                // Ensure max 2 of any given image are chosen
+                // Dirty solution, may not scale nicely depending on number of buttons / images
+                int candidateImageIndex = random.nextInt(images.length);
+                while(count[candidateImageIndex] >= 2){
+                    candidateImageIndex = random.nextInt(images.length);
+                }
+
+                count[candidateImageIndex]++;
+                buttonToImageIndex[i] = candidateImageIndex;
             }
         }
 

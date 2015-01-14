@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.Random;
 
@@ -26,18 +27,19 @@ public class MemoryGameActivity extends ActionBarActivity {
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * A fragment containing our memory game.
      */
     public static class PlaceholderFragment extends Fragment {
 
-        private static final int BUSY = -2;
+        private boolean busy;
         private static final int NONE = -1;
         private Handler handler = new Handler();
         private Button[] buttons = new Button[4];
         // Art by Michael B. Myers Jr. at http://drbl.in/bhbA
         private int[] images = new int[]{R.drawable.card_c3po, R.drawable.card_r2d2};
         private int[] buttonToImageIndex = new int[4];
-        private int buttonClicked;
+        private boolean[] buttonRevealed = new boolean[4];
+        private int lastIndexClicked;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,46 +78,96 @@ public class MemoryGameActivity extends ActionBarActivity {
                 buttonToImageIndex[i] = candidateImageIndex;
             }
 
+            busy = false;
+            lastIndexClicked = NONE;
             resetButtons();
 
             return rootView;
         }
 
-        private void onButtonClicked(int index, Button b){
+        /** Reset the image of each button to the default back. */
+        private void resetButtons(){
+            for(int i = 0; i < buttonRevealed.length; i++){
+                buttonRevealed[i] = false;
+            }
 
-            if(BUSY == buttonClicked) return;
-            if(NONE == buttonClicked){
-                // Set the image of the button to be a chosen picture
-                b.setBackgroundResource(images[buttonToImageIndex[index]]);
+            for(Button b : buttons){
+                b.setBackgroundResource(R.drawable.card_back);
+            }
+        }
 
-                buttonClicked = index;
-            } else {
-                // another button was previously clicked!
-                if(buttonClicked == index){
-                    return;
+        private void hideUnrevealedButtons(){
+            for(int i = 0; i < buttons.length; i++){
+                if(buttonRevealed[i]){
+                    buttons[i].setBackgroundResource(images[buttonToImageIndex[i]]);
                 } else {
-                    buttonClicked = BUSY;
-
-                    b.setBackgroundResource(images[buttonToImageIndex[index]]);
-
-                    // Call the hidePictures method after a delay
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            resetButtons();
-                        }
-                    }, 700);
+                    buttons[i].setBackgroundResource(R.drawable.card_back);
                 }
             }
         }
 
-        private void resetButtons(){
-            // Reset the image of each button to the default back
-            for(Button b : buttons){
-                b.setBackgroundResource(R.drawable.card_back);
+        private void onButtonClicked(int indexClicked, Button b){
+            if(busy) return;
+
+            // Set the image of the button to its corresponding picture.
+            b.setBackgroundResource(images[buttonToImageIndex[indexClicked]]);
+
+            if(NONE == lastIndexClicked){
+                // This is the first button clicked.
+                lastIndexClicked = indexClicked;
+            } else {
+                // A button was previously clicked!
+                if(lastIndexClicked == indexClicked){
+                    // Same button clicked again. Do nothing..
+                    return;
+                } else {
+                    // A unique second button was clicked!
+                    if(match(lastIndexClicked, indexClicked)){
+                        buttonRevealed[lastIndexClicked] = true;
+                        buttonRevealed[indexClicked] = true;
+                        lastIndexClicked = NONE;
+
+                        checkVictoryState();
+                    } else {
+                        lastIndexClicked = NONE;
+
+                        // Do not let the user perform clicks while we are waiting
+                        busy = true;
+
+                        // Call the hideUnrevealedButtons method after a delay
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                hideUnrevealedButtons();
+                                busy = false;
+                            }
+                        }, 700);
+                    }
+                }
+            }
+        }
+
+        /** @return true if buttons at given indices have an identical picture. */
+        private boolean match(int firstButtonIndex, int secondButtonIndex){
+            return buttonToImageIndex[firstButtonIndex] == buttonToImageIndex[secondButtonIndex];
+        }
+
+        /** Checks if the player has won the game. If so, resets the game.*/
+        private void checkVictoryState(){
+            for(boolean revealed : buttonRevealed){
+                if(!revealed) return; // if any button has not been revealed, the game is on!
             }
 
-            buttonClicked = NONE;
+            // Congratulate the player!
+            Toast.makeText(getActivity(), "Congratulations! You win!", Toast.LENGTH_SHORT).show();
+
+            // Reset the game after a short delay
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    resetButtons();
+                }
+            }, 1000);
         }
     }
 }

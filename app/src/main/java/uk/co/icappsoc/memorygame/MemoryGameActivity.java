@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ public class MemoryGameActivity extends ActionBarActivity {
         setContentView(R.layout.activity_memory_game);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new MemoryGameFragment())
                     .commit();
         }
     }
@@ -29,17 +30,25 @@ public class MemoryGameActivity extends ActionBarActivity {
     /**
      * A fragment containing our memory game.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class MemoryGameFragment extends Fragment {
+        private static final int NUM_BUTTONS = 8;
+        private static final String LOG_TAG = MemoryGameFragment.class.getSimpleName();
 
         private boolean busy;
-        private static final int NONE = -1;
         private Handler handler = new Handler();
-        private Button[] buttons = new Button[4];
+
+        private Button[] buttons = new Button[NUM_BUTTONS];
         // Art by Michael B. Myers Jr. at http://drbl.in/bhbA
-        private int[] images = new int[]{R.drawable.card_c3po, R.drawable.card_r2d2};
-        private int[] buttonToImageIndex = new int[4];
-        private boolean[] buttonRevealed = new boolean[4];
+        private int[] images = new int[]{
+                R.drawable.card_c3po,
+                R.drawable.card_r2d2,
+                R.drawable.card_han,
+                R.drawable.card_chewie};
+        private int[] buttonToImageIndex = new int[NUM_BUTTONS];
+
+        private boolean[] buttonRevealed = new boolean[NUM_BUTTONS];
         private int lastIndexClicked;
+        private static final int NONE = -1;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,10 +56,9 @@ public class MemoryGameActivity extends ActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_memory_game, container, false);
 
             // Get a reference to each button, store in our buttons array
-            buttons[0] = (Button) rootView.findViewById(R.id.button);
-            buttons[1] = (Button) rootView.findViewById(R.id.button2);
-            buttons[2] = (Button) rootView.findViewById(R.id.button3);
-            buttons[3] = (Button) rootView.findViewById(R.id.button4);
+            for(int i = 0; i < NUM_BUTTONS; i++){
+                buttons[i] = (Button) rootView.findViewById(getButtonId("button" + i));
+            }
 
             // Each button behaves the same; on click, call showPicture with a reference to the clicked button
             for(int i = 0; i < buttons.length; i++){
@@ -70,6 +78,17 @@ public class MemoryGameActivity extends ActionBarActivity {
             return rootView;
         }
 
+        /** A handy (but not recommended) way to retrieve a resource id by name in code. */
+        private int getButtonId(final String buttonIdName){
+            final int buttonId = getResources().getIdentifier(buttonIdName, "id", getActivity().getPackageName());
+            if(0 == buttonId){
+                // uh oh. better not even try..
+                Log.e(LOG_TAG, "Could not find button with id " + buttonIdName);
+                throw new RuntimeException("Cannot find necessary button..");
+            }
+            return buttonId;
+        }
+
         /** Reset the image of each button to the default back. */
         private void resetButtons(){
             for(int i = 0; i < buttonRevealed.length; i++){
@@ -84,6 +103,11 @@ public class MemoryGameActivity extends ActionBarActivity {
         }
 
         private void randomizeButtonImages(){
+            if(images.length < NUM_BUTTONS / 2){
+                Log.e(LOG_TAG, images.length + " images are not enough for " + NUM_BUTTONS + " buttons.");
+                throw new RuntimeException("Not enough images!");
+            }
+
             // Randomize button images
             Random random = new Random();
             int[] count = new int[images.length];
@@ -171,7 +195,7 @@ public class MemoryGameActivity extends ActionBarActivity {
                 public void run() {
                     resetButtons();
                 }
-            }, 1000);
+            }, 1400);
         }
     }
 }

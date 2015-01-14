@@ -142,7 +142,7 @@ public class MemoryGameActivity extends ActionBarActivity {
 
             if(NONE == lastIndexClicked){
                 // This is the first button clicked.
-                lastIndexClicked = indexClicked;
+                if(!buttonRevealed[indexClicked]) lastIndexClicked = indexClicked;
             } else {
                 // A button was previously clicked!
                 if(lastIndexClicked == indexClicked){

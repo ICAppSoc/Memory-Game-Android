@@ -2,6 +2,7 @@ package uk.co.icappsoc.memorygame;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.Toast;
 
 import java.util.Random;
@@ -46,6 +48,8 @@ public class MemoryGameActivity extends ActionBarActivity {
                 R.drawable.card_chewie};
         private int[] buttonToImageIndex = new int[NUM_BUTTONS];
 
+        private Chronometer timer;
+        private boolean firstPairRevealed;
         private boolean[] buttonRevealed = new boolean[NUM_BUTTONS];
         private int lastIndexClicked;
         private static final int NONE = -1;
@@ -71,6 +75,8 @@ public class MemoryGameActivity extends ActionBarActivity {
                 });
             }
 
+            timer = (Chronometer) rootView.findViewById(R.id.timer);
+
             busy = false;
             lastIndexClicked = NONE;
             resetButtons();
@@ -94,6 +100,7 @@ public class MemoryGameActivity extends ActionBarActivity {
             for(int i = 0; i < buttonRevealed.length; i++){
                 buttonRevealed[i] = false;
             }
+            firstPairRevealed = false;
 
             for(Button b : buttons){
                 b.setBackgroundResource(R.drawable.card_back);
@@ -142,7 +149,13 @@ public class MemoryGameActivity extends ActionBarActivity {
 
             if(NONE == lastIndexClicked){
                 // This is the first button clicked.
-                if(!buttonRevealed[indexClicked]) lastIndexClicked = indexClicked;
+                if(!buttonRevealed[indexClicked]){
+                    lastIndexClicked = indexClicked;
+
+                    if(!firstPairRevealed){
+                        hideTimer();
+                    }
+                }
             } else {
                 // A button was previously clicked!
                 if(lastIndexClicked == indexClicked){
@@ -150,6 +163,11 @@ public class MemoryGameActivity extends ActionBarActivity {
                     return;
                 } else {
                     // A unique second button was clicked!
+                    if(!firstPairRevealed){
+                        startTimer();
+                        firstPairRevealed = true;
+                    }
+
                     if(match(lastIndexClicked, indexClicked)){
                         buttonRevealed[lastIndexClicked] = true;
                         buttonRevealed[indexClicked] = true;
@@ -186,6 +204,8 @@ public class MemoryGameActivity extends ActionBarActivity {
                 if(!revealed) return; // if any button has not been revealed, the game is on!
             }
 
+            stopTimer();
+
             // Congratulate the player!
             Toast.makeText(getActivity(), "Congratulations! You win!", Toast.LENGTH_SHORT).show();
 
@@ -196,6 +216,20 @@ public class MemoryGameActivity extends ActionBarActivity {
                     resetButtons();
                 }
             }, 1400);
+        }
+
+        private void startTimer(){
+            timer.setBase(SystemClock.elapsedRealtime());
+            timer.start();
+            timer.setVisibility(View.VISIBLE);
+        }
+
+        private void stopTimer(){
+            timer.stop();
+        }
+
+        private void hideTimer(){
+            timer.setVisibility(View.GONE);
         }
     }
 }

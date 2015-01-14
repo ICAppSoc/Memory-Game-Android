@@ -48,11 +48,27 @@
             android:background="@drawable/card_back"
             android:id="@+id/button3" />
 
-        <ImageView
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/button_margin"
-            android:background="@drawable/logo" />
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/button_margin"
+                android:background="@drawable/logo" />
+
+            <Chronometer
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="16dp"
+                android:textStyle="bold"
+                android:textColor="@color/gold"
+                android:visibility="invisible"
+                android:id="@+id/timer" />
+
+        </FrameLayout>
 
         <Button
             android:layout_width="wrap_content"

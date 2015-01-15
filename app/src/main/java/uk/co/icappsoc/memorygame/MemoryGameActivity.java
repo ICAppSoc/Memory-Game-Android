@@ -50,7 +50,7 @@ public class MemoryGameActivity extends ActionBarActivity {
 
         private Chronometer timer;
         private boolean firstPairRevealed;
-        private boolean[] buttonRevealed = new boolean[NUM_BUTTONS];
+        private boolean[] buttonPermanentlyRevealed = new boolean[NUM_BUTTONS];
         private int lastIndexClicked;
         private static final int NONE = -1;
 
@@ -97,8 +97,8 @@ public class MemoryGameActivity extends ActionBarActivity {
 
         /** Reset the image of each button to the default back. */
         private void resetButtons(){
-            for(int i = 0; i < buttonRevealed.length; i++){
-                buttonRevealed[i] = false;
+            for(int i = 0; i < buttonPermanentlyRevealed.length; i++){
+                buttonPermanentlyRevealed[i] = false;
             }
             firstPairRevealed = false;
 
@@ -133,7 +133,7 @@ public class MemoryGameActivity extends ActionBarActivity {
 
         private void hideUnrevealedButtons(){
             for(int i = 0; i < buttons.length; i++){
-                if(buttonRevealed[i]){
+                if(buttonPermanentlyRevealed[i]){
                     buttons[i].setBackgroundResource(images[buttonToImageIndex[i]]);
                 } else {
                     buttons[i].setBackgroundResource(R.drawable.card_back);
@@ -143,52 +143,45 @@ public class MemoryGameActivity extends ActionBarActivity {
 
         private void onButtonClicked(int indexClicked, Button b){
             if(busy) return;
+            if(buttonPermanentlyRevealed[indexClicked]) return; // Nothing to do here..
 
             // Set the image of the button to its corresponding picture.
             b.setBackgroundResource(images[buttonToImageIndex[indexClicked]]);
 
             if(NONE == lastIndexClicked){
                 // This is the first button clicked.
-                if(!buttonRevealed[indexClicked]){
-                    lastIndexClicked = indexClicked;
+                lastIndexClicked = indexClicked;
 
-                    if(!firstPairRevealed){
-                        hideTimer();
-                    }
+                if(!firstPairRevealed){
+                    hideTimer();
                 }
-            } else {
-                // A button was previously clicked!
-                if(lastIndexClicked == indexClicked){
-                    // Same button clicked again. Do nothing..
-                    return;
+            } else if(lastIndexClicked != indexClicked){
+                // A unique second button was clicked!
+                if(!firstPairRevealed){
+                    startTimer();
+                    firstPairRevealed = true;
+                }
+
+                if(match(lastIndexClicked, indexClicked)){
+                    buttonPermanentlyRevealed[lastIndexClicked] = true;
+                    buttonPermanentlyRevealed[indexClicked] = true;
+                    lastIndexClicked = NONE;
+
+                    checkVictoryState();
                 } else {
-                    // A unique second button was clicked!
-                    if(!firstPairRevealed){
-                        startTimer();
-                        firstPairRevealed = true;
-                    }
+                    lastIndexClicked = NONE;
 
-                    if(match(lastIndexClicked, indexClicked)){
-                        buttonRevealed[lastIndexClicked] = true;
-                        buttonRevealed[indexClicked] = true;
-                        lastIndexClicked = NONE;
+                    // Do not let the user perform clicks while we are waiting
+                    busy = true;
 
-                        checkVictoryState();
-                    } else {
-                        lastIndexClicked = NONE;
-
-                        // Do not let the user perform clicks while we are waiting
-                        busy = true;
-
-                        // Call the hideUnrevealedButtons method after a delay
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                hideUnrevealedButtons();
-                                busy = false;
-                            }
-                        }, 700);
-                    }
+                    // Call the hideUnrevealedButtons method after a delay
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            hideUnrevealedButtons();
+                            busy = false;
+                        }
+                    }, 700);
                 }
             }
         }
@@ -200,7 +193,7 @@ public class MemoryGameActivity extends ActionBarActivity {
 
         /** Checks if the player has won the game. If so, resets the game.*/
         private void checkVictoryState(){
-            for(boolean revealed : buttonRevealed){
+            for(boolean revealed : buttonPermanentlyRevealed){
                 if(!revealed) return; // if any button has not been revealed, the game is on!
             }
 
